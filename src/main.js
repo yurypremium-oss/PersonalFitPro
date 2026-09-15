@@ -1,7 +1,6 @@
 import './style.css'
 import { supabase } from './lib/supabase'
 
-
 // ======================================================
 // VARIÁVEIS GLOBAIS
 // ======================================================
@@ -9,7 +8,6 @@ import { supabase } from './lib/supabase'
 window.usuarioAtual = null
 window.treinosAlunoGrupos = {}
 window.divisaoTreinoAlunoAtual = null
-
 
 // ======================================================
 // UTILITÁRIOS
@@ -28,7 +26,6 @@ function escaparHtml(valor) {
     .replaceAll("'", '&#039;')
 }
 
-
 function transformarYoutubeEmbed(url) {
   if (!url) return null
 
@@ -45,13 +42,11 @@ function transformarYoutubeEmbed(url) {
       videoId = urlObj.searchParams.get('v') || ''
 
       if (!videoId && urlObj.pathname.includes('/shorts/')) {
-        videoId =
-          urlObj.pathname.split('/shorts/')[1]
+        videoId = urlObj.pathname.split('/shorts/')[1]
       }
 
       if (!videoId && urlObj.pathname.includes('/embed/')) {
-        videoId =
-          urlObj.pathname.split('/embed/')[1]
+        videoId = urlObj.pathname.split('/embed/')[1]
       }
     }
 
@@ -63,55 +58,42 @@ function transformarYoutubeEmbed(url) {
     videoId = videoId.split('?')[0]
 
     return `https://www.youtube.com/embed/${videoId}`
-
   } catch {
     return null
   }
 }
-
 
 // ======================================================
 // VÍDEO
 // ======================================================
 
 function abrirVideo(url) {
-
-  const embedUrl =
-    transformarYoutubeEmbed(url)
+  const embedUrl = transformarYoutubeEmbed(url)
 
   if (!embedUrl) {
-
-    alert(
-      'Não foi possível abrir este vídeo.'
-    )
-
+    alert('Não foi possível abrir este vídeo.')
     return
   }
 
-  const modalExistente =
-    document.getElementById('video-modal')
+  const modalExistente = document.getElementById('video-modal')
 
   if (modalExistente) {
     modalExistente.remove()
   }
 
-  const modal =
-    document.createElement('div')
+  const modal = document.createElement('div')
 
   modal.id = 'video-modal'
 
   modal.innerHTML = `
-
     <div
       class="video-modal-overlay"
       onclick="fecharVideo(event)"
     >
-
       <div
         class="video-modal-content"
         onclick="event.stopPropagation()"
       >
-
         <button
           class="video-modal-close"
           onclick="fecharVideo()"
@@ -120,18 +102,15 @@ function abrirVideo(url) {
         </button>
 
         <div class="video-container">
-
           <iframe
             src="${embedUrl}"
             title="Demonstração do exercício"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
-
         </div>
 
         <div class="video-modal-footer">
-
           <a
             href="${url}"
             target="_blank"
@@ -139,45 +118,31 @@ function abrirVideo(url) {
           >
             Abrir no YouTube ↗
           </a>
-
         </div>
-
       </div>
-
     </div>
-
   `
 
   document.body.appendChild(modal)
 }
 
-
 function fecharVideo() {
-
-  const modal =
-    document.getElementById('video-modal')
+  const modal = document.getElementById('video-modal')
 
   if (modal) {
     modal.remove()
   }
 }
 
-
 window.abrirVideo = abrirVideo
 window.fecharVideo = fecharVideo
-
 
 // ======================================================
 // LOGIN
 // ======================================================
 
-async function realizarLogin(
-  email,
-  senha
-) {
-
-  const mensagem =
-    document.getElementById('login-message')
+async function realizarLogin(email, senha) {
+  const mensagem = document.getElementById('login-message')
 
   if (mensagem) {
     mensagem.innerHTML = ''
@@ -186,52 +151,38 @@ async function realizarLogin(
   const {
     data,
     error
-  } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password: senha
-    })
+  } = await supabase.auth.signInWithPassword({
+    email,
+    password: senha
+  })
 
   if (error) {
-
     console.error(error)
 
     if (mensagem) {
-
       mensagem.innerHTML = `
-
         <div class="message error">
-
           E-mail ou senha incorretos.
-
         </div>
-
       `
     }
 
     return
   }
 
-  window.usuarioAtual =
-    data.user
+  window.usuarioAtual = data.user
 
-  await identificarUsuario(
-    data.user
-  )
+  await identificarUsuario(data.user)
 }
-
 
 // ======================================================
 // TELA DE LOGIN
 // ======================================================
 
 function mostrarLogin() {
-
-  const app =
-    document.getElementById('app')
+  const app = document.getElementById('app')
 
   app.innerHTML = `
-
     <div class="login-container">
 
       <div class="login-card">
@@ -251,7 +202,6 @@ function mostrarLogin() {
         <form id="login-form">
 
           <label>
-
             E-mail
 
             <input
@@ -261,11 +211,9 @@ function mostrarLogin() {
               autocomplete="email"
               required
             >
-
           </label>
 
           <label>
-
             Senha
 
             <input
@@ -275,7 +223,6 @@ function mostrarLogin() {
               autocomplete="current-password"
               required
             >
-
           </label>
 
           <button
@@ -292,155 +239,101 @@ function mostrarLogin() {
       </div>
 
     </div>
-
   `
 
+  const form = document.getElementById('login-form')
 
-  const form =
-    document.getElementById('login-form')
+  form.addEventListener('submit', async event => {
+    event.preventDefault()
 
+    const email = document
+      .getElementById('login-email')
+      .value
+      .trim()
 
-  form.addEventListener(
-    'submit',
-    async event => {
+    const senha = document
+      .getElementById('login-password')
+      .value
 
-      event.preventDefault()
-
-      const email =
-        document
-          .getElementById('login-email')
-          .value
-          .trim()
-
-      const senha =
-        document
-          .getElementById('login-password')
-          .value
-
-      await realizarLogin(
-        email,
-        senha
-      )
-    }
-  )
+    await realizarLogin(email, senha)
+  })
 }
-
 
 // ======================================================
 // IDENTIFICAR USUÁRIO
 // ======================================================
 
 async function identificarUsuario(user) {
-
   window.usuarioAtual = user
 
-  const app =
-    document.getElementById('app')
+  const app = document.getElementById('app')
 
   const {
     data: perfil,
     error
-  } =
-    await supabase
-      .from('perfis')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle()
-
+  } = await supabase
+    .from('perfis')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle()
 
   if (error) {
-
     console.error(error)
 
     app.innerHTML = `
-
       <div class="login-container">
-
         <div class="login-card">
-
           <div class="message error">
-
             Erro ao carregar seu perfil.
-
           </div>
-
         </div>
-
       </div>
-
     `
 
     return
   }
-
 
   if (!perfil) {
-
     app.innerHTML = `
-
       <div class="login-container">
-
         <div class="login-card">
-
           <div class="message error">
-
             Perfil de usuário não encontrado.
-
           </div>
-
         </div>
-
       </div>
-
     `
 
     return
   }
-
 
   if (!perfil.ativo) {
-
     app.innerHTML = `
-
       <div class="login-container">
-
         <div class="login-card">
-
           <div class="message error">
-
             Seu acesso está desativado.
-
           </div>
-
         </div>
-
       </div>
-
     `
 
     return
   }
 
-
   if (perfil.tipo === 'professor') {
-
     await mostrarAreaProfessor(user)
-
   } else {
-
     await mostrarAreaAluno(user)
   }
 }
-
 
 // ======================================================
 // TOPBAR
 // ======================================================
 
 function criarTopbar(nome) {
-
   return `
-
     <header class="topbar">
 
       <h1>
@@ -463,58 +356,43 @@ function criarTopbar(nome) {
       </div>
 
     </header>
-
   `
 }
-
 
 // ======================================================
 // LOGOUT
 // ======================================================
 
 async function fazerLogout() {
-
   await supabase.auth.signOut()
 
   window.usuarioAtual = null
-
   window.treinosAlunoGrupos = {}
-
   window.divisaoTreinoAlunoAtual = null
 
   mostrarLogin()
 }
 
-
 window.fazerLogout = fazerLogout
-
 
 // ======================================================
 // ÁREA DO PROFESSOR
 // ======================================================
 
 async function mostrarAreaProfessor(user) {
-
-  // CORREÇÃO IMPORTANTE
   window.usuarioAtual = user
 
-
-  const app =
-    document.getElementById('app')
-
+  const app = document.getElementById('app')
 
   const {
     data: perfil
-  } =
-    await supabase
-      .from('perfis')
-      .select('nome')
-      .eq('id', user.id)
-      .single()
-
+  } = await supabase
+    .from('perfis')
+    .select('nome')
+    .eq('id', user.id)
+    .single()
 
   app.innerHTML = `
-
     <div class="app-container">
 
       ${criarTopbar(
@@ -530,7 +408,6 @@ async function mostrarAreaProfessor(user) {
           </div>
 
           <div>
-
             <h2>
               Olá,
               ${escaparHtml(
@@ -541,11 +418,9 @@ async function mostrarAreaProfessor(user) {
             <p>
               Gerencie seus alunos, treinos e avaliações.
             </p>
-
           </div>
 
         </div>
-
 
         <div class="dashboard-grid">
 
@@ -553,7 +428,6 @@ async function mostrarAreaProfessor(user) {
             class="dashboard-card"
             onclick="mostrarAlunosProfessor()"
           >
-
             <div class="dashboard-icon">
               👥
             </div>
@@ -565,15 +439,12 @@ async function mostrarAreaProfessor(user) {
             <small>
               Gerenciar alunos cadastrados
             </small>
-
           </button>
-
 
           <button
             class="dashboard-card"
             onclick="mostrarMensagemProfessor('Treinos')"
           >
-
             <div class="dashboard-icon">
               🏋️
             </div>
@@ -585,15 +456,12 @@ async function mostrarAreaProfessor(user) {
             <small>
               Gerenciar treinos
             </small>
-
           </button>
-
 
           <button
             class="dashboard-card"
             onclick="mostrarMensagemProfessor('Progresso')"
           >
-
             <div class="dashboard-icon">
               📊
             </div>
@@ -605,15 +473,12 @@ async function mostrarAreaProfessor(user) {
             <small>
               Avaliações e evolução
             </small>
-
           </button>
-
 
           <button
             class="dashboard-card"
             onclick="mostrarMensagemProfessor('Configurações')"
           >
-
             <div class="dashboard-icon">
               ⚙️
             </div>
@@ -625,39 +490,30 @@ async function mostrarAreaProfessor(user) {
             <small>
               Configurações do sistema
             </small>
-
           </button>
 
         </div>
-
 
         <section id="professor-content"></section>
 
       </main>
 
     </div>
-
   `
 }
-
 
 // ======================================================
 // MENSAGEM PROFESSOR
 // ======================================================
 
-function mostrarMensagemProfessor(
-  titulo
-) {
-
-  const area =
-    document.getElementById(
-      'professor-content'
-    )
+function mostrarMensagemProfessor(titulo) {
+  const area = document.getElementById(
+    'professor-content'
+  )
 
   if (!area) return
 
   area.innerHTML = `
-
     <div class="empty-state">
 
       <h3>
@@ -669,34 +525,24 @@ function mostrarMensagemProfessor(
       </p>
 
     </div>
-
   `
 }
 
-
 window.mostrarMensagemProfessor =
   mostrarMensagemProfessor
-
 
 // ======================================================
 // LISTA DE ALUNOS
 // ======================================================
 
 async function mostrarAlunosProfessor() {
+  console.log('Abrindo lista de alunos...')
 
-  console.log(
-    'Abrindo lista de alunos...'
+  const area = document.getElementById(
+    'professor-content'
   )
 
-
-  const area =
-    document.getElementById(
-      'professor-content'
-    )
-
-
   if (!area) {
-
     console.error(
       'Área professor-content não encontrada.'
     )
@@ -704,13 +550,10 @@ async function mostrarAlunosProfessor() {
     return
   }
 
-
   area.innerHTML = `
-
     <div class="section-header">
 
       <div>
-
         <h2>
           Meus alunos
         </h2>
@@ -718,18 +561,27 @@ async function mostrarAlunosProfessor() {
         <p>
           Selecione um aluno para acessar sua ficha.
         </p>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+        <button
+          class="primary-button"
+          onclick="mostrarFormularioNovoAluno()"
+        >
+          + Cadastrar aluno
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="mostrarAreaProfessorAtual()"
+        >
+          ← Voltar
+        </button>
 
       </div>
 
-      <button
-        class="secondary-button"
-        onclick="mostrarAreaProfessorAtual()"
-      >
-        ← Voltar
-      </button>
-
     </div>
-
 
     <div id="lista-alunos">
 
@@ -738,50 +590,36 @@ async function mostrarAlunosProfessor() {
       </div>
 
     </div>
-
   `
-
 
   const {
     data: alunos,
     error
-  } =
-    await supabase
-      .from('alunos')
-      .select('*')
-      .order('nome', {
-        ascending: true
-      })
+  } = await supabase
+    .from('alunos')
+    .select('*')
+    .order('nome', {
+      ascending: true
+    })
 
-
-  const lista =
-    document.getElementById(
-      'lista-alunos'
-    )
-
+  const lista = document.getElementById(
+    'lista-alunos'
+  )
 
   if (error) {
-
     console.error(error)
 
     lista.innerHTML = `
-
       <div class="message error">
-
         Erro ao carregar alunos.
-
       </div>
-
     `
 
     return
   }
 
-
   if (!alunos || alunos.length === 0) {
-
     lista.innerHTML = `
-
       <div class="empty-state">
 
         <h3>
@@ -793,98 +631,297 @@ async function mostrarAlunosProfessor() {
         </p>
 
       </div>
-
     `
 
     return
   }
 
+  lista.innerHTML = alunos
+    .map(aluno => {
 
-  lista.innerHTML =
-    alunos
-      .map(aluno => {
+      const inicial = aluno.nome
+        ? aluno.nome.charAt(0).toUpperCase()
+        : '?'
 
-        const inicial =
-          aluno.nome
-            ? aluno.nome
-                .charAt(0)
-                .toUpperCase()
-            : '?'
+      return `
+        <div
+          class="student-row student-row-clickable"
+          onclick="mostrarFichaAluno('${aluno.id}')"
+        >
 
+          <div class="student-avatar">
+            ${escaparHtml(inicial)}
+          </div>
 
-        return `
+          <div class="student-info">
 
-          <div
-            class="student-row student-row-clickable"
-            onclick="mostrarFichaAluno('${aluno.id}')"
-          >
+            <strong>
+              ${escaparHtml(aluno.nome)}
+            </strong>
 
-            <div class="student-avatar">
-
+            <span>
               ${escaparHtml(
-                inicial
+                aluno.email || 'Sem e-mail'
               )}
-
-            </div>
-
-
-            <div class="student-info">
-
-              <strong>
-
-                ${escaparHtml(
-                  aluno.nome
-                )}
-
-              </strong>
-
-              <span>
-
-                ${escaparHtml(
-                  aluno.email ||
-                  'Sem e-mail'
-                )}
-
-              </span>
-
-            </div>
-
-
-            <div class="student-status">
-
-              ${
-                aluno.ativo
-                  ? 'Ativo'
-                  : 'Inativo'
-              }
-
-            </div>
-
-
-            <div class="student-arrow">
-              ›
-            </div>
+            </span>
 
           </div>
 
-        `
-      })
-      .join('')
-}
+          <div class="student-status">
+            ${aluno.ativo ? 'Ativo' : 'Inativo'}
+          </div>
 
+          <div class="student-arrow">
+            ›
+          </div>
+
+        </div>
+      `
+    })
+    .join('')
+}
 
 window.mostrarAlunosProfessor =
   mostrarAlunosProfessor
 
+// ======================================================
+// NOVO ALUNO
+// ======================================================
+
+function mostrarFormularioNovoAluno() {
+  const area = document.getElementById(
+    'professor-content'
+  )
+
+  if (!area) return
+
+  area.innerHTML = `
+    <div class="section-header">
+
+      <div>
+        <h2>
+          Cadastrar novo aluno
+        </h2>
+
+        <p>
+          Preencha os dados do aluno.
+        </p>
+      </div>
+
+      <button
+        class="secondary-button"
+        onclick="mostrarAlunosProfessor()"
+      >
+        ← Voltar para alunos
+      </button>
+
+    </div>
+
+    <div class="form-card">
+
+      <form id="novo-aluno-form">
+
+        <div class="form-group">
+
+          <label for="novo-aluno-nome">
+            Nome completo
+          </label>
+
+          <input
+            id="novo-aluno-nome"
+            type="text"
+            placeholder="Digite o nome completo"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="novo-aluno-email">
+            E-mail
+          </label>
+
+          <input
+            id="novo-aluno-email"
+            type="email"
+            placeholder="Digite o e-mail"
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <label style="display:flex;align-items:center;gap:8px;">
+            <input
+              id="novo-aluno-ativo"
+              type="checkbox"
+              checked
+            >
+
+            Aluno ativo
+          </label>
+
+        </div>
+
+        <div
+          id="novo-aluno-message"
+          style="margin-bottom:15px;"
+        ></div>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            💾 Salvar aluno
+          </button>
+
+          <button
+            type="button"
+            class="secondary-button"
+            onclick="mostrarAlunosProfessor()"
+          >
+            Cancelar
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  `
+
+  const form = document.getElementById(
+    'novo-aluno-form'
+  )
+
+  form.addEventListener(
+    'submit',
+    salvarNovoAluno
+  )
+}
+
+window.mostrarFormularioNovoAluno =
+  mostrarFormularioNovoAluno
+
+// ======================================================
+// SALVAR NOVO ALUNO
+// ======================================================
+
+async function salvarNovoAluno(event) {
+  event.preventDefault()
+
+  const nome = document
+    .getElementById('novo-aluno-nome')
+    .value
+    .trim()
+
+  const email = document
+    .getElementById('novo-aluno-email')
+    .value
+    .trim()
+
+  const ativo = document
+    .getElementById('novo-aluno-ativo')
+    .checked
+
+  const mensagem = document.getElementById(
+    'novo-aluno-message'
+  )
+
+  if (!nome) {
+    mensagem.innerHTML = `
+      <div class="message error">
+        Informe o nome do aluno.
+      </div>
+    `
+
+    return
+  }
+
+  mensagem.innerHTML = `
+    <div class="message info">
+      Salvando aluno...
+    </div>
+  `
+
+  const dadosAluno = {
+    nome,
+    ativo
+  }
+
+  if (email) {
+    dadosAluno.email = email
+  }
+
+  const {
+    data,
+    error
+  } = await supabase
+    .from('alunos')
+    .insert(dadosAluno)
+    .select()
+    .single()
+
+  if (error) {
+    console.error(error)
+
+    let mensagemErro =
+      'Não foi possível cadastrar o aluno.'
+
+    if (
+      error.code === '23505'
+    ) {
+      mensagemErro =
+        'Este e-mail já está cadastrado.'
+    }
+
+    mensagem.innerHTML = `
+      <div class="message error">
+        ${escaparHtml(mensagemErro)}
+      </div>
+    `
+
+    return
+  }
+
+  console.log(
+    'Aluno cadastrado:',
+    data
+  )
+
+  mensagem.innerHTML = `
+    <div class="message success">
+      Aluno cadastrado com sucesso! ✅
+    </div>
+  `
+
+  setTimeout(() => {
+    mostrarAlunosProfessor()
+  }, 800)
+}
+
+window.salvarNovoAluno =
+  salvarNovoAluno
 
 // ======================================================
 // VOLTAR PARA DASHBOARD PROFESSOR
 // ======================================================
 
 async function mostrarAreaProfessorAtual() {
-
   if (!window.usuarioAtual) {
-
     console.error(
       'Usuário atual não encontrado.'
     )
@@ -894,535 +931,575 @@ async function mostrarAreaProfessorAtual() {
     return
   }
 
-
   await mostrarAreaProfessor(
     window.usuarioAtual
   )
 }
 
-
 window.mostrarAreaProfessorAtual =
   mostrarAreaProfessorAtual
-
 
 // ======================================================
 // FICHA DO ALUNO
 // ======================================================
 
-async function mostrarFichaAluno(
-  alunoId
-) {
-
-  const area =
-    document.getElementById(
-      'professor-content'
-    )
-
+async function mostrarFichaAluno(alunoId) {
+  const area = document.getElementById(
+    'professor-content'
+  )
 
   if (!area) return
 
-
   area.innerHTML = `
-
     <div class="message info">
       Carregando ficha do aluno...
     </div>
-
   `
-
 
   const {
     data: aluno,
     error
-  } =
-    await supabase
-      .from('alunos')
-      .select('*')
-      .eq('id', alunoId)
-      .single()
+  } = await supabase
+    .from('alunos')
+    .select('*')
+    .eq('id', alunoId)
+    .single()
 
-
-  if (error) {
-
+  if (error || !aluno) {
     console.error(error)
 
     area.innerHTML = `
-
       <div class="message error">
-
-        Erro ao carregar aluno.
-
+        Não foi possível carregar a ficha do aluno.
       </div>
-
     `
 
     return
   }
 
-
-  const inicial =
-    aluno.nome
-      ? aluno.nome
-          .charAt(0)
-          .toUpperCase()
-      : '?'
-
-
   area.innerHTML = `
-
     <div class="section-header">
 
       <div>
-
         <h2>
           Ficha do aluno
         </h2>
 
         <p>
-          Gerenciamento individual
+          ${escaparHtml(aluno.nome)}
         </p>
-
       </div>
 
       <button
         class="secondary-button"
         onclick="mostrarAlunosProfessor()"
       >
-        ← Alunos
+        ← Voltar
       </button>
 
     </div>
 
+    <div class="profile-card">
 
-    <div class="student-profile-card">
+      <div class="profile-header">
 
-      <div class="student-profile-avatar">
+        <div class="student-avatar large">
+          ${escaparHtml(
+            aluno.nome
+              ? aluno.nome.charAt(0).toUpperCase()
+              : '?'
+          )}
+        </div>
 
-        ${escaparHtml(
-          inicial
-        )}
+        <div>
+
+          <h2>
+            ${escaparHtml(aluno.nome)}
+          </h2>
+
+          <p>
+            ${escaparHtml(
+              aluno.email || 'Sem e-mail'
+            )}
+          </p>
+
+          <span class="badge">
+            ${aluno.ativo ? 'Ativo' : 'Inativo'}
+          </span>
+
+        </div>
 
       </div>
 
+      <div class="dashboard-grid">
 
-      <h3>
+        <button
+          class="dashboard-card"
+          onclick="mostrarTreinosProfessorAluno('${aluno.id}')"
+        >
+          <div class="dashboard-icon">
+            🏋️
+          </div>
 
-        ${escaparHtml(
-          aluno.nome
-        )}
+          <strong>
+            Treinos
+          </strong>
 
-      </h3>
+          <small>
+            Gerenciar treinos do aluno
+          </small>
+        </button>
 
+        <button
+          class="dashboard-card"
+          onclick="mostrarProgressoProfessorAluno('${aluno.id}')"
+        >
+          <div class="dashboard-icon">
+            📊
+          </div>
 
-      <p>
+          <strong>
+            Progresso
+          </strong>
 
-        ${escaparHtml(
-          aluno.email ||
-          'Sem e-mail'
-        )}
+          <small>
+            Avaliações e evolução
+          </small>
+        </button>
 
-      </p>
+        <button
+          class="dashboard-card"
+          onclick="mostrarFormularioEditarAluno('${aluno.id}')"
+        >
+          <div class="dashboard-icon">
+            ✏️
+          </div>
 
+          <strong>
+            Editar cadastro
+          </strong>
 
-      <p>
+          <small>
+            Alterar dados do aluno
+          </small>
+        </button>
 
-        Status:
+        <button
+          class="dashboard-card"
+          onclick="mostrarMensagemProfessor('Acesso do aluno')"
+        >
+          <div class="dashboard-icon">
+            🔐
+          </div>
 
-        <strong>
+          <strong>
+            Acesso do aluno
+          </strong>
 
-          ${
-            aluno.ativo
-              ? 'Ativo'
-              : 'Inativo'
-          }
+          <small>
+            Gerenciar acesso
+          </small>
+        </button>
 
-        </strong>
-
-      </p>
-
-    </div>
-
-
-    <div class="dashboard-grid">
-
-      <button
-        class="dashboard-card"
-        onclick="mostrarTreinosProfessorAluno('${aluno.id}')"
-      >
-
-        <div class="dashboard-icon">
-          🏋️
-        </div>
-
-        <strong>
-          Treinos
-        </strong>
-
-        <small>
-          Gerenciar treinos deste aluno
-        </small>
-
-      </button>
-
-
-      <button
-        class="dashboard-card"
-        onclick="mostrarProgressoProfessorAluno('${aluno.id}')"
-      >
-
-        <div class="dashboard-icon">
-          📊
-        </div>
-
-        <strong>
-          Progresso
-        </strong>
-
-        <small>
-          Avaliações e evolução
-        </small>
-
-      </button>
-
-
-      <button
-        class="dashboard-card"
-        onclick="mostrarMensagemProfessor('Editar cadastro')"
-      >
-
-        <div class="dashboard-icon">
-          ✏️
-        </div>
-
-        <strong>
-          Editar cadastro
-        </strong>
-
-        <small>
-          Alterar informações do aluno
-        </small>
-
-      </button>
-
-
-      <button
-        class="dashboard-card"
-        onclick="mostrarMensagemProfessor('Acesso do aluno')"
-      >
-
-        <div class="dashboard-icon">
-          🔐
-        </div>
-
-        <strong>
-          Acesso do aluno
-        </strong>
-
-        <small>
-          Gerenciar acesso
-        </small>
-
-      </button>
+      </div>
 
     </div>
-
-
-    <div id="aluno-content"></div>
-
   `
 }
-
 
 window.mostrarFichaAluno =
   mostrarFichaAluno
 
+// ======================================================
+// EDITAR ALUNO
+// ======================================================
+
+async function mostrarFormularioEditarAluno(alunoId) {
+  const area = document.getElementById(
+    'professor-content'
+  )
+
+  const {
+    data: aluno,
+    error
+  } = await supabase
+    .from('alunos')
+    .select('*')
+    .eq('id', alunoId)
+    .single()
+
+  if (error || !aluno) {
+    area.innerHTML = `
+      <div class="message error">
+        Não foi possível carregar o aluno.
+      </div>
+    `
+
+    return
+  }
+
+  area.innerHTML = `
+    <div class="section-header">
+
+      <div>
+        <h2>
+          Editar aluno
+        </h2>
+
+        <p>
+          Atualize os dados do aluno.
+        </p>
+      </div>
+
+      <button
+        class="secondary-button"
+        onclick="mostrarFichaAluno('${aluno.id}')"
+      >
+        ← Voltar
+      </button>
+
+    </div>
+
+    <div class="form-card">
+
+      <form id="editar-aluno-form">
+
+        <div class="form-group">
+
+          <label>
+            Nome completo
+          </label>
+
+          <input
+            id="editar-aluno-nome"
+            type="text"
+            value="${escaparHtml(aluno.nome)}"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            E-mail
+          </label>
+
+          <input
+            id="editar-aluno-email"
+            type="email"
+            value="${escaparHtml(aluno.email || '')}"
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label style="display:flex;align-items:center;gap:8px;">
+
+            <input
+              id="editar-aluno-ativo"
+              type="checkbox"
+              ${aluno.ativo ? 'checked' : ''}
+            >
+
+            Aluno ativo
+
+          </label>
+
+        </div>
+
+        <div id="editar-aluno-message"></div>
+
+        <br>
+
+        <button
+          type="submit"
+          class="primary-button"
+        >
+          💾 Salvar alterações
+        </button>
+
+      </form>
+
+    </div>
+  `
+
+  document
+    .getElementById('editar-aluno-form')
+    .addEventListener(
+      'submit',
+      async event => {
+
+        event.preventDefault()
+
+        const nome = document
+          .getElementById('editar-aluno-nome')
+          .value
+          .trim()
+
+        const email = document
+          .getElementById('editar-aluno-email')
+          .value
+          .trim()
+
+        const ativo = document
+          .getElementById('editar-aluno-ativo')
+          .checked
+
+        const mensagem =
+          document.getElementById(
+            'editar-aluno-message'
+          )
+
+        const dados = {
+          nome,
+          ativo,
+          email: email || null
+        }
+
+        const {
+          error
+        } = await supabase
+          .from('alunos')
+          .update(dados)
+          .eq('id', alunoId)
+
+        if (error) {
+          console.error(error)
+
+          mensagem.innerHTML = `
+            <div class="message error">
+              Não foi possível atualizar o aluno.
+            </div>
+          `
+
+          return
+        }
+
+        mensagem.innerHTML = `
+          <div class="message success">
+            Aluno atualizado com sucesso! ✅
+          </div>
+        `
+
+        setTimeout(() => {
+          mostrarFichaAluno(alunoId)
+        }, 700)
+      }
+    )
+}
+
+window.mostrarFormularioEditarAluno =
+  mostrarFormularioEditarAluno
 
 // ======================================================
 // TREINOS DO PROFESSOR
 // ======================================================
 
-async function mostrarTreinosProfessorAluno(
-  alunoId
-) {
-
-  const area =
-    document.getElementById(
-      'aluno-content'
-    )
-
-
-  if (!area) return
-
+async function mostrarTreinosProfessorAluno(alunoId) {
+  const area = document.getElementById(
+    'professor-content'
+  )
 
   area.innerHTML = `
-
-    <div class="section-header">
-
-      <div>
-
-        <h3>
-          Treinos
-        </h3>
-
-        <p>
-          Gerencie os exercícios deste aluno.
-        </p>
-
-      </div>
-
-
-      <button
-        class="primary-button"
-        onclick="mostrarFormularioTreinoProfessor('${alunoId}')"
-      >
-        + Novo exercício
-      </button>
-
+    <div class="message info">
+      Carregando treinos...
     </div>
-
-
-    <div id="treinos-professor-list">
-
-      <div class="message info">
-        Carregando treinos...
-      </div>
-
-    </div>
-
   `
 
+  const {
+    data: aluno
+  } = await supabase
+    .from('alunos')
+    .select('nome')
+    .eq('id', alunoId)
+    .single()
 
   const {
     data: treinos,
     error
-  } =
-    await supabase
-      .from('treinos')
-      .select('*')
-      .eq('aluno_id', alunoId)
-      .order('divisao', {
-        ascending: true
-      })
-      .order('ordem', {
-        ascending: true
-      })
-
-
-  const lista =
-    document.getElementById(
-      'treinos-professor-list'
-    )
-
+  } = await supabase
+    .from('treinos')
+    .select('*')
+    .eq('aluno_id', alunoId)
+    .order('divisao', { ascending: true })
+    .order('ordem', { ascending: true })
 
   if (error) {
-
     console.error(error)
 
-    lista.innerHTML = `
-
+    area.innerHTML = `
       <div class="message error">
-
         Erro ao carregar treinos.
-
       </div>
-
     `
 
     return
   }
 
+  area.innerHTML = `
+    <div class="section-header">
+
+      <div>
+        <h2>
+          Treinos de ${escaparHtml(
+            aluno?.nome || 'Aluno'
+          )}
+        </h2>
+
+        <p>
+          Adicione, edite ou exclua exercícios.
+        </p>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+        <button
+          class="primary-button"
+          onclick="mostrarFormularioTreinoProfessor('${alunoId}')"
+        >
+          + Adicionar exercício
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="mostrarFichaAluno('${alunoId}')"
+        >
+          ← Voltar
+        </button>
+
+      </div>
+
+    </div>
+
+    <div id="lista-treinos-professor"></div>
+  `
+
+  const lista = document.getElementById(
+    'lista-treinos-professor'
+  )
 
   if (!treinos || treinos.length === 0) {
-
     lista.innerHTML = `
-
       <div class="empty-state">
 
         <h3>
-          Nenhum treino cadastrado
+          Nenhum exercício cadastrado
         </h3>
 
         <p>
-          Clique em "Novo exercício" para começar.
+          Clique em "Adicionar exercício" para montar o treino.
         </p>
 
       </div>
-
     `
 
     return
   }
 
-
   const grupos = {}
 
-
   treinos.forEach(treino => {
-
-    const divisao =
-      treino.divisao ||
-      'Treino'
-
-
-    if (!grupos[divisao]) {
-      grupos[divisao] = []
+    if (!grupos[treino.divisao]) {
+      grupos[treino.divisao] = []
     }
 
-
-    grupos[divisao].push(
-      treino
-    )
+    grupos[treino.divisao].push(treino)
   })
 
+  lista.innerHTML = Object.entries(grupos)
+    .map(([divisao, exercicios]) => `
+      <div class="workout-section">
 
-  lista.innerHTML =
-    Object.keys(grupos)
-      .map(divisao => `
+        <div class="section-header">
 
-        <div class="workout-section">
-
-          <div class="workout-section-header">
-
+          <div>
             <h3>
-              Treino ${escaparHtml(
-                divisao
-              )}
+              Treino ${escaparHtml(divisao)}
             </h3>
-
-            <span>
-
-              ${
-                grupos[divisao].length
-              }
-
-              ${
-                grupos[divisao].length === 1
-                  ? 'exercício'
-                  : 'exercícios'
-              }
-
-            </span>
-
-          </div>
-
-
-          <div class="workout-list">
-
-            ${grupos[divisao]
-              .map(
-                (treino, index) => `
-
-                  <div class="workout-card">
-
-                    <div class="workout-number">
-
-                      ${index + 1}
-
-                    </div>
-
-
-                    <div class="workout-info">
-
-                      <h4>
-
-                        ${escaparHtml(
-                          treino.exercicio
-                        )}
-
-                      </h4>
-
-
-                      <div class="workout-details">
-
-                        <span>
-
-                          <strong>
-                            Séries:
-                          </strong>
-
-                          ${escaparHtml(
-                            treino.series
-                          )}
-
-                        </span>
-
-
-                        <span>
-
-                          <strong>
-                            Repetições:
-                          </strong>
-
-                          ${escaparHtml(
-                            treino.repeticoes
-                          )}
-
-                        </span>
-
-                      </div>
-
-
-                      <div class="workout-actions">
-
-                        ${
-                          treino.video
-                            ? `
-
-                              <button
-                                class="secondary-button"
-                                onclick="abrirVideo('${escaparHtml(treino.video)}')"
-                              >
-                                ▶ Assistir vídeo
-                              </button>
-
-                            `
-                            : `
-
-                              <span class="no-video">
-                                Sem vídeo
-                              </span>
-
-                            `
-                        }
-
-
-                        <button
-                          class="secondary-button"
-                          onclick="mostrarFormularioTreinoProfessor('${alunoId}', '${treino.id}')"
-                        >
-                          ✏️ Editar
-                        </button>
-
-
-                        <button
-                          class="secondary-button"
-                          onclick="excluirTreinoProfessor('${treino.id}', '${alunoId}')"
-                        >
-                          🗑️ Excluir
-                        </button>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                `
-              )
-              .join('')}
-
           </div>
 
         </div>
 
-      `)
-      .join('')
-}
+        <div class="workout-list">
 
+          ${exercicios.map(treino => `
+            <div class="workout-card">
+
+              <div class="workout-card-header">
+
+                <strong>
+                  ${escaparHtml(treino.exercicio)}
+                </strong>
+
+                <div class="action-buttons">
+
+                  <button
+                    class="secondary-button"
+                    onclick="mostrarFormularioTreinoProfessor('${alunoId}', ${treino.id})"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    class="danger-button"
+                    onclick="excluirTreinoProfessor(${treino.id}, '${alunoId}')"
+                  >
+                    Excluir
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div class="workout-details">
+
+                <span>
+                  Séries:
+                  <strong>
+                    ${treino.series ?? '-'}
+                  </strong>
+                </span>
+
+                <span>
+                  Repetições:
+                  <strong>
+                    ${escaparHtml(
+                      treino.repeticoes ?? '-'
+                    )}
+                  </strong>
+                </span>
+
+                ${
+                  treino.video
+                    ? `
+                      <button
+                        class="video-button"
+                        onclick="abrirVideo('${escaparHtml(
+                          treino.video
+                        )}')"
+                      >
+                        ▶ Vídeo
+                      </button>
+                    `
+                    : ''
+                }
+
+              </div>
+
+            </div>
+          `).join('')}
+
+        </div>
+
+      </div>
+    `)
+    .join('')
+}
 
 window.mostrarTreinosProfessorAluno =
   mostrarTreinosProfessorAluno
-
 
 // ======================================================
 // FORMULÁRIO DE TREINO
@@ -1432,68 +1509,47 @@ async function mostrarFormularioTreinoProfessor(
   alunoId,
   treinoId = null
 ) {
-
-  const area =
-    document.getElementById(
-      'aluno-content'
-    )
-
+  const area = document.getElementById(
+    'professor-content'
+  )
 
   let treino = null
 
-
   if (treinoId) {
-
     const {
       data,
       error
-    } =
-      await supabase
-        .from('treinos')
-        .select('*')
-        .eq('id', treinoId)
-        .eq('aluno_id', alunoId)
-        .single()
-
+    } = await supabase
+      .from('treinos')
+      .select('*')
+      .eq('id', treinoId)
+      .single()
 
     if (error) {
-
       console.error(error)
 
-      alert(
-        'Erro ao carregar exercício.'
-      )
+      area.innerHTML = `
+        <div class="message error">
+          Erro ao carregar exercício.
+        </div>
+      `
 
       return
     }
 
-
     treino = data
   }
 
-
   area.innerHTML = `
-
     <div class="section-header">
 
       <div>
-
-        <h3>
-
-          ${
-            treino
-              ? 'Editar exercício'
-              : 'Novo exercício'
-          }
-
-        </h3>
-
-        <p>
-          Preencha os dados do exercício.
-        </p>
-
+        <h2>
+          ${treino
+            ? 'Editar exercício'
+            : 'Adicionar exercício'}
+        </h2>
       </div>
-
 
       <button
         class="secondary-button"
@@ -1504,401 +1560,226 @@ async function mostrarFormularioTreinoProfessor(
 
     </div>
 
+    <div class="form-card">
 
-    <form
-      id="form-treino"
-      class="form-card"
-    >
+      <form id="treino-form">
 
-      <label>
+        <div class="form-group">
 
-        Divisão
+          <label>
+            Divisão
+          </label>
 
-        <select
-          id="treino-divisao"
-          required
-        >
-
-          <option value="">
-            Selecione
-          </option>
-
-          <option
-            value="A"
-            ${
-              treino?.divisao === 'A'
-                ? 'selected'
-                : ''
-            }
+          <input
+            id="treino-divisao"
+            type="text"
+            placeholder="Ex.: A"
+            value="${escaparHtml(
+              treino?.divisao || ''
+            )}"
+            required
           >
-            Treino A
-          </option>
 
-          <option
-            value="B"
-            ${
-              treino?.divisao === 'B'
-                ? 'selected'
-                : ''
-            }
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Exercício
+          </label>
+
+          <input
+            id="treino-exercicio"
+            type="text"
+            placeholder="Nome do exercício"
+            value="${escaparHtml(
+              treino?.exercicio || ''
+            )}"
+            required
           >
-            Treino B
-          </option>
 
-          <option
-            value="C"
-            ${
-              treino?.divisao === 'C'
-                ? 'selected'
-                : ''
-            }
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Séries
+          </label>
+
+          <input
+            id="treino-series"
+            type="number"
+            min="1"
+            value="${treino?.series ?? ''}"
           >
-            Treino C
-          </option>
 
-          <option
-            value="D"
-            ${
-              treino?.divisao === 'D'
-                ? 'selected'
-                : ''
-            }
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Repetições
+          </label>
+
+          <input
+            id="treino-repeticoes"
+            type="text"
+            placeholder="Ex.: 12"
+            value="${escaparHtml(
+              treino?.repeticoes || ''
+            )}"
           >
-            Treino D
-          </option>
 
-        </select>
+        </div>
 
-      </label>
+        <div class="form-group">
 
+          <label>
+            Vídeo do YouTube
+          </label>
 
-      <label>
+          <input
+            id="treino-video"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value="${escaparHtml(
+              treino?.video || ''
+            )}"
+          >
 
-        Exercício
+        </div>
 
-        <input
-          id="treino-exercicio"
-          type="text"
-          placeholder="Ex.: Cadeira extensora"
-          value="${escaparHtml(
-            treino?.exercicio || ''
-          )}"
-          required
+        <div id="treino-message"></div>
+
+        <br>
+
+        <button
+          type="submit"
+          class="primary-button"
         >
+          💾 Salvar exercício
+        </button>
 
-      </label>
+      </form>
 
-
-      <label>
-
-        Séries
-
-        <input
-          id="treino-series"
-          type="number"
-          min="1"
-          placeholder="Ex.: 3"
-          value="${escaparHtml(
-            treino?.series || ''
-          )}"
-          required
-        >
-
-      </label>
-
-
-      <label>
-
-        Repetições / Tempo
-
-        <input
-          id="treino-repeticoes"
-          type="text"
-          placeholder="Ex.: 12 ou 30 min"
-          value="${escaparHtml(
-            treino?.repeticoes || ''
-          )}"
-          required
-        >
-
-      </label>
-
-
-      <label>
-
-        Vídeo do YouTube
-
-        <input
-          id="treino-video"
-          type="url"
-          placeholder="https://www.youtube.com/..."
-          value="${escaparHtml(
-            treino?.video || ''
-          )}"
-        >
-
-        <small>
-          Opcional.
-        </small>
-
-      </label>
-
-
-      <button
-        type="submit"
-        class="primary-button"
-      >
-
-        ${
-          treino
-            ? 'Salvar alterações'
-            : 'Cadastrar exercício'
-        }
-
-      </button>
-
-    </form>
-
+    </div>
   `
 
-
   document
-    .getElementById('form-treino')
+    .getElementById('treino-form')
     .addEventListener(
       'submit',
-      async event => {
-
-        event.preventDefault()
-
-        await salvarTreinoProfessor(
-          alunoId,
-          treinoId
-        )
-      }
+      event => salvarTreinoProfessor(
+        event,
+        alunoId,
+        treinoId
+      )
     )
 }
 
-
 window.mostrarFormularioTreinoProfessor =
   mostrarFormularioTreinoProfessor
-
 
 // ======================================================
 // SALVAR TREINO
 // ======================================================
 
 async function salvarTreinoProfessor(
+  event,
   alunoId,
   treinoId
 ) {
+  event.preventDefault()
+
+  const mensagem =
+    document.getElementById(
+      'treino-message'
+    )
 
   const divisao =
-    document
-      .getElementById(
-        'treino-divisao'
-      )
-      .value
-      .trim()
-
+    document.getElementById(
+      'treino-divisao'
+    ).value.trim()
 
   const exercicio =
-    document
-      .getElementById(
-        'treino-exercicio'
-      )
-      .value
-      .trim()
+    document.getElementById(
+      'treino-exercicio'
+    ).value.trim()
 
-
-  const series =
-    document
-      .getElementById(
-        'treino-series'
-      )
-      .value
-
+  const seriesValue =
+    document.getElementById(
+      'treino-series'
+    ).value
 
   const repeticoes =
-    document
-      .getElementById(
-        'treino-repeticoes'
-      )
-      .value
-      .trim()
-
+    document.getElementById(
+      'treino-repeticoes'
+    ).value.trim()
 
   const video =
-    document
-      .getElementById(
-        'treino-video'
-      )
-      .value
-      .trim()
-
+    document.getElementById(
+      'treino-video'
+    ).value.trim()
 
   if (!divisao || !exercicio) {
-
-    alert(
-      'Preencha a divisão e o exercício.'
-    )
-
-    return
-  }
-
-
-  if (
-    video &&
-    !transformarYoutubeEmbed(video)
-  ) {
-
-    alert(
-      'Informe um link válido do YouTube.'
-    )
+    mensagem.innerHTML = `
+      <div class="message error">
+        Divisão e exercício são obrigatórios.
+      </div>
+    `
 
     return
   }
 
+  const dados = {
+    aluno_id: alunoId,
+    divisao,
+    exercicio,
+    series: seriesValue
+      ? Number(seriesValue)
+      : null,
+    repeticoes: repeticoes || null,
+    video: video || null
+  }
+
+  let resultado
 
   if (treinoId) {
-
-    const {
-      error
-    } =
-      await supabase
-        .from('treinos')
-        .update({
-
-          divisao,
-
-          exercicio,
-
-          series:
-            series
-              ? Number(series)
-              : null,
-
-          repeticoes,
-
-          video:
-            video || null
-
-        })
-        .eq(
-          'id',
-          treinoId
-        )
-        .eq(
-          'aluno_id',
-          alunoId
-        )
-
-
-    if (error) {
-
-      console.error(error)
-
-      alert(
-        'Erro ao atualizar exercício.'
-      )
-
-      return
-    }
-
-
-    alert(
-      'Exercício atualizado com sucesso!'
-    )
-
+    resultado = await supabase
+      .from('treinos')
+      .update(dados)
+      .eq('id', treinoId)
   } else {
-
-    const {
-      data: existentes
-    } =
-      await supabase
-        .from('treinos')
-        .select('ordem')
-        .eq(
-          'aluno_id',
-          alunoId
-        )
-        .eq(
-          'divisao',
-          divisao
-        )
-        .order(
-          'ordem',
-          {
-            ascending: false
-          }
-        )
-        .limit(1)
-
-
-    const proximaOrdem =
-      existentes?.length
-        ? (
-            existentes[0].ordem || 0
-          ) + 1
-        : 1
-
-
-    const {
-      error
-    } =
-      await supabase
-        .from('treinos')
-        .insert({
-
-          aluno_id:
-            alunoId,
-
-          divisao,
-
-          exercicio,
-
-          series:
-            series
-              ? Number(series)
-              : null,
-
-          repeticoes,
-
-          video:
-            video || null,
-
-          ordem:
-            proximaOrdem
-
-        })
-
-
-    if (error) {
-
-      console.error(error)
-
-      alert(
-        'Erro ao cadastrar exercício.'
-      )
-
-      return
-    }
-
-
-    alert(
-      'Exercício cadastrado com sucesso!'
-    )
+    resultado = await supabase
+      .from('treinos')
+      .insert(dados)
   }
 
+  if (resultado.error) {
+    console.error(resultado.error)
 
-  await mostrarTreinosProfessorAluno(
-    alunoId
-  )
+    mensagem.innerHTML = `
+      <div class="message error">
+        Não foi possível salvar o exercício.
+      </div>
+    `
+
+    return
+  }
+
+  mensagem.innerHTML = `
+    <div class="message success">
+      Exercício salvo com sucesso! ✅
+    </div>
+  `
+
+  setTimeout(() => {
+    mostrarTreinosProfessorAluno(alunoId)
+  }, 700)
 }
-
 
 window.salvarTreinoProfessor =
   salvarTreinoProfessor
-
 
 // ======================================================
 // EXCLUIR TREINO
@@ -1908,92 +1789,70 @@ async function excluirTreinoProfessor(
   treinoId,
   alunoId
 ) {
+  const confirmar = confirm(
+    'Deseja realmente excluir este exercício?'
+  )
 
-  const confirmar =
-    confirm(
-      'Deseja realmente excluir este exercício?'
-    )
-
-
-  if (!confirmar) {
-    return
-  }
-
+  if (!confirmar) return
 
   const {
     error
-  } =
-    await supabase
-      .from('treinos')
-      .delete()
-      .eq(
-        'id',
-        treinoId
-      )
-      .eq(
-        'aluno_id',
-        alunoId
-      )
-
+  } = await supabase
+    .from('treinos')
+    .delete()
+    .eq('id', treinoId)
 
   if (error) {
-
     console.error(error)
 
     alert(
-      'Erro ao excluir exercício.'
+      'Não foi possível excluir o exercício.'
     )
 
     return
   }
-
 
   await mostrarTreinosProfessorAluno(
     alunoId
   )
 }
 
-
 window.excluirTreinoProfessor =
   excluirTreinoProfessor
-
 
 // ======================================================
 // ÁREA DO ALUNO
 // ======================================================
 
-async function mostrarAreaAluno(
-  user
-) {
-
+async function mostrarAreaAluno(user) {
   window.usuarioAtual = user
 
+  const app = document.getElementById('app')
 
-  const app =
-    document.getElementById('app')
-
+  const {
+    data: aluno
+  } = await supabase
+    .from('alunos')
+    .select('*')
+    .eq('auth_user_id', user.id)
+    .maybeSingle()
 
   const {
     data: perfil
-  } =
-    await supabase
-      .from('perfis')
-      .select('nome')
-      .eq(
-        'id',
-        user.id
-      )
-      .single()
-
+  } = await supabase
+    .from('perfis')
+    .select('nome')
+    .eq('id', user.id)
+    .maybeSingle()
 
   app.innerHTML = `
-
     <div class="app-container">
 
       ${criarTopbar(
-        perfil?.nome || 'Aluno'
+        aluno?.nome ||
+        perfil?.nome ||
+        'Aluno'
       )}
-
 
       <main class="main-content">
 
@@ -2006,173 +1865,110 @@ async function mostrarAreaAluno(
           <div>
 
             <h2>
-
               Olá,
               ${escaparHtml(
-                perfil?.nome || 'Aluno'
+                aluno?.nome ||
+                perfil?.nome ||
+                'Aluno'
               )}!
-
             </h2>
 
             <p>
-              Pronto para o seu treino de hoje?
+              Confira seus treinos.
             </p>
 
           </div>
 
         </div>
 
+        <section id="aluno-content">
 
-        <div class="dashboard-grid">
+          <div class="message info">
+            Carregando seus treinos...
+          </div>
 
-          <button
-            class="dashboard-card"
-            onclick="carregarTreinosAluno()"
-          >
-
-            <div class="dashboard-icon">
-              🏋️
-            </div>
-
-            <strong>
-              Meus treinos
-            </strong>
-
-            <small>
-              Consulte seus exercícios
-            </small>
-
-          </button>
-
-
-          <button
-            class="dashboard-card"
-            onclick="carregarProgressoAluno()"
-          >
-
-            <div class="dashboard-icon">
-              📊
-            </div>
-
-            <strong>
-              Meu progresso
-            </strong>
-
-            <small>
-              Acompanhe sua evolução
-            </small>
-
-          </button>
-
-        </div>
-
-
-        <section id="aluno-area-content"></section>
+        </section>
 
       </main>
 
     </div>
-
   `
-}
 
+  if (!aluno) {
+    document.getElementById(
+      'aluno-content'
+    ).innerHTML = `
+      <div class="message error">
+        Cadastro de aluno não encontrado.
+      </div>
+    `
+
+    return
+  }
+
+  await carregarTreinosAluno(
+    aluno.id
+  )
+}
 
 // ======================================================
 // TREINOS DO ALUNO
 // ======================================================
 
 async function carregarTreinosAluno(
+  alunoId,
   divisaoSelecionada = null
 ) {
-
-  const area =
-    document.getElementById(
-      'aluno-area-content'
-    )
-
+  const area = document.getElementById(
+    'aluno-content'
+  )
 
   if (!area) return
-
-
-  area.innerHTML = `
-
-    <div class="section-header">
-
-      <div>
-
-        <h2>
-          Meus treinos
-        </h2>
-
-        <p>
-          Escolha o treino que deseja visualizar.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div id="seletor-treinos">
-
-      <div class="message info">
-        Carregando seus treinos...
-      </div>
-
-    </div>
-
-
-    <div
-      id="treino-aluno-conteudo"
-      style="margin-top: 22px;"
-    ></div>
-
-  `
-
 
   const {
     data: treinos,
     error
-  } =
-    await supabase
-      .from('treinos')
-      .select('*')
-      .order(
-        'divisao',
-        {
-          ascending: true
-        }
-      )
-      .order(
-        'ordem',
-        {
-          ascending: true
-        }
-      )
-
+  } = await supabase
+    .from('treinos')
+    .select('*')
+    .eq('aluno_id', alunoId)
+    .order('divisao', {
+      ascending: true
+    })
+    .order('ordem', {
+      ascending: true
+    })
 
   if (error) {
-
     console.error(error)
 
     area.innerHTML = `
-
       <div class="message error">
-
         Erro ao carregar seus treinos.
-
       </div>
-
     `
 
     return
   }
 
+  window.treinosAlunoGrupos = {}
 
-  if (!treinos || treinos.length === 0) {
+  ;(treinos || []).forEach(treino => {
+    if (!window.treinosAlunoGrupos[treino.divisao]) {
+      window.treinosAlunoGrupos[treino.divisao] = []
+    }
 
+    window.treinosAlunoGrupos[
+      treino.divisao
+    ].push(treino)
+  })
+
+  const divisoes = Object.keys(
+    window.treinosAlunoGrupos
+  )
+
+  if (divisoes.length === 0) {
     area.innerHTML = `
-
       <div class="empty-state">
 
         <h3>
@@ -2184,447 +1980,256 @@ async function carregarTreinosAluno(
         </p>
 
       </div>
-
     `
 
     return
   }
 
-
-  const grupos = {}
-
-
-  treinos.forEach(treino => {
-
-    const divisao =
-      treino.divisao ||
-      'Treino'
-
-
-    if (!grupos[divisao]) {
-      grupos[divisao] = []
-    }
-
-
-    grupos[divisao].push(
-      treino
-    )
-  })
-
-
-  const divisoes =
-    Object.keys(grupos)
-
-
   const divisaoInicial =
     divisaoSelecionada &&
-    grupos[divisaoSelecionada]
+    divisoes.includes(divisaoSelecionada)
       ? divisaoSelecionada
       : divisoes[0]
 
-
-  window.treinosAlunoGrupos =
-    grupos
-
   window.divisaoTreinoAlunoAtual =
     divisaoInicial
-
-
-  document
-    .getElementById(
-      'seletor-treinos'
-    )
-    .innerHTML = `
-
-      <div class="workout-selector">
-
-        <div class="workout-selector-title">
-
-          Escolha seu treino
-
-        </div>
-
-
-        <div class="workout-selector-buttons">
-
-          ${
-            divisoes
-              .map(divisao => `
-
-                <button
-                  class="
-                    workout-selector-button
-                    ${
-                      divisao === divisaoInicial
-                        ? 'active'
-                        : ''
-                    }
-                  "
-                  onclick="
-                    selecionarTreinoAluno('${escaparHtml(divisao)}')
-                  "
-                >
-
-                  <span class="selector-letter">
-
-                    ${escaparHtml(
-                      divisao
-                    )}
-
-                  </span>
-
-
-                  <span>
-
-                    Treino
-                    ${escaparHtml(
-                      divisao
-                    )}
-
-                  </span>
-
-                </button>
-
-              `)
-              .join('')
-          }
-
-        </div>
-
-      </div>
-
-    `
-
 
   renderizarTreinoAluno(
     divisaoInicial
   )
 }
-
 
 window.carregarTreinosAluno =
   carregarTreinosAluno
 
-
 // ======================================================
-// SELECIONAR TREINO A/B/C/D
+// SELECIONAR TREINO A / B
 // ======================================================
 
-function selecionarTreinoAluno(
-  divisao
-) {
-
-  if (
-    !window.treinosAlunoGrupos ||
-    !window.treinosAlunoGrupos[divisao]
-  ) {
-    return
-  }
-
-
+function selecionarTreinoAluno(divisao) {
   window.divisaoTreinoAlunoAtual =
     divisao
-
-
-  document
-    .querySelectorAll(
-      '.workout-selector-button'
-    )
-    .forEach(botao => {
-
-      botao.classList.remove(
-        'active'
-      )
-
-
-      const letra =
-        botao
-          .querySelector(
-            '.selector-letter'
-          )
-
-
-      if (
-        letra &&
-        letra.textContent.trim() ===
-          divisao
-      ) {
-
-        botao.classList.add(
-          'active'
-        )
-      }
-
-    })
-
 
   renderizarTreinoAluno(
     divisao
   )
 }
 
-
 window.selecionarTreinoAluno =
   selecionarTreinoAluno
 
-
 // ======================================================
-// RENDERIZAR TREINO ESCOLHIDO
+// RENDERIZAR TREINO DO ALUNO
 // ======================================================
 
-function renderizarTreinoAluno(
-  divisao
-) {
-
-  const area =
-    document.getElementById(
-      'treino-aluno-conteudo'
-    )
-
+function renderizarTreinoAluno(divisao) {
+  const area = document.getElementById(
+    'aluno-content'
+  )
 
   if (!area) return
 
+  const grupo =
+    window.treinosAlunoGrupos[
+      divisao
+    ] || []
 
-  const treinos =
-    window
-      .treinosAlunoGrupos?.[divisao]
-
-
-  if (!treinos) {
-    return
-  }
-
+  const divisoes =
+    Object.keys(
+      window.treinosAlunoGrupos
+    )
 
   area.innerHTML = `
+    <div class="section-header">
 
-    <div class="workout-section">
+      <div>
+        <h2>
+          Meu treino
+        </h2>
 
-      <div class="workout-section-header">
-
-        <h3>
-
-          Treino
-          ${escaparHtml(
-            divisao
-          )}
-
-        </h3>
-
-
-        <span>
-
-          ${treinos.length}
-
-          ${
-            treinos.length === 1
-              ? 'exercício'
-              : 'exercícios'
-          }
-
-        </span>
-
+        <p>
+          Selecione a divisão do treino.
+        </p>
       </div>
 
+    </div>
 
-      <div class="workout-list">
+    <div class="workout-selector">
 
-        ${
-          treinos
-            .map(
-              (treino, index) => `
+      <div class="workout-selector-title">
+        Treinos disponíveis
+      </div>
 
-                <div class="workout-card">
+      <div class="workout-selector-buttons">
 
-                  <div class="workout-number">
+        ${divisoes.map(d => `
+          <button
+            class="workout-selector-button ${
+              d === divisao
+                ? 'active'
+                : ''
+            }"
+            onclick="selecionarTreinoAluno('${escaparHtml(d)}')"
+          >
 
-                    ${index + 1}
+            <span class="selector-letter">
+              ${escaparHtml(d)}
+            </span>
 
-                  </div>
+            <span>
+              Treino ${escaparHtml(d)}
+            </span>
 
-
-                  <div class="workout-info">
-
-                    <h4>
-
-                      ${escaparHtml(
-                        treino.exercicio
-                      )}
-
-                    </h4>
-
-
-                    <div class="workout-details">
-
-                      <span>
-
-                        <strong>
-                          Séries:
-                        </strong>
-
-                        ${escaparHtml(
-                          treino.series
-                        )}
-
-                      </span>
-
-
-                      <span>
-
-                        <strong>
-                          Repetições:
-                        </strong>
-
-                        ${escaparHtml(
-                          treino.repeticoes
-                        )}
-
-                      </span>
-
-                    </div>
-
-
-                    <div class="workout-actions">
-
-                      ${
-                        treino.video
-                          ? `
-
-                            <button
-                              class="primary-button"
-                              onclick="
-                                abrirVideo('${escaparHtml(treino.video)}')
-                              "
-                            >
-
-                              ▶ Ver demonstração
-
-                            </button>
-
-                          `
-                          : `
-
-                            <span class="no-video">
-
-                              Vídeo não disponível
-
-                            </span>
-
-                          `
-                      }
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              `
-            )
-            .join('')
-        }
+          </button>
+        `).join('')}
 
       </div>
 
     </div>
 
+    <div class="workout-section">
+
+      <div class="section-header">
+
+        <div>
+          <h2>
+            Treino ${escaparHtml(divisao)}
+          </h2>
+
+          <p>
+            ${grupo.length}
+            exercício(s)
+          </p>
+        </div>
+
+      </div>
+
+      <div class="workout-list">
+
+        ${grupo.map((treino, index) => `
+          <div class="workout-card">
+
+            <div class="workout-card-header">
+
+              <div>
+
+                <span
+                  style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                    margin-bottom:5px;
+                  "
+                >
+                  Exercício ${index + 1}
+                </span>
+
+                <strong>
+                  ${escaparHtml(
+                    treino.exercicio
+                  )}
+                </strong>
+
+              </div>
+
+            </div>
+
+            <div class="workout-details">
+
+              <span>
+                Séries:
+                <strong>
+                  ${treino.series ?? '-'}
+                </strong>
+              </span>
+
+              <span>
+                Repetições:
+                <strong>
+                  ${escaparHtml(
+                    treino.repeticoes ?? '-'
+                  )}
+                </strong>
+              </span>
+
+              ${
+                treino.video
+                  ? `
+                    <button
+                      class="video-button"
+                      onclick="abrirVideo('${escaparHtml(
+                        treino.video
+                      )}')"
+                    >
+                      ▶ Ver demonstração
+                    </button>
+                  `
+                  : ''
+              }
+
+            </div>
+
+          </div>
+        `).join('')}
+
+      </div>
+
+    </div>
   `
 }
-
 
 // ======================================================
 // PROGRESSO DO ALUNO
 // ======================================================
 
 async function carregarProgressoAluno() {
-
-  const area =
-    document.getElementById(
-      'aluno-area-content'
-    )
-
-
-  if (!area) return
-
-
-  area.innerHTML = `
-
-    <div class="section-header">
-
-      <div>
-
-        <h2>
-          Meu progresso
-        </h2>
-
-        <p>
-          Acompanhe suas avaliações.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="empty-state">
-
-      <h3>
-        Avaliações
-      </h3>
-
-      <p>
-        A área de evolução será desenvolvida na próxima etapa.
-      </p>
-
-    </div>
-
-  `
+  console.log(
+    'Área de progresso do aluno ainda será desenvolvida.'
+  )
 }
-
 
 window.carregarProgressoAluno =
   carregarProgressoAluno
-
 
 // ======================================================
 // PROGRESSO DO PROFESSOR
 // ======================================================
 
-function mostrarProgressoProfessorAluno(
+async function mostrarProgressoProfessorAluno(
   alunoId
 ) {
-
-  const area =
-    document.getElementById(
-      'aluno-content'
-    )
-
+  const area = document.getElementById(
+    'professor-content'
+  )
 
   if (!area) return
 
-
   area.innerHTML = `
-
     <div class="section-header">
 
       <div>
-
-        <h3>
-          Progresso
-        </h3>
+        <h2>
+          Progresso do aluno
+        </h2>
 
         <p>
-          Avaliações e evolução do aluno.
+          Avaliações e evolução.
         </p>
-
       </div>
 
-    </div>
+      <button
+        class="secondary-button"
+        onclick="mostrarFichaAluno('${alunoId}')"
+      >
+        ← Voltar
+      </button>
 
+    </div>
 
     <div class="empty-state">
 
       <h3>
-        Avaliações
+        Progresso
       </h3>
 
       <p>
@@ -2632,52 +2237,24 @@ function mostrarProgressoProfessorAluno(
       </p>
 
     </div>
-
   `
 }
 
-
 window.mostrarProgressoProfessorAluno =
   mostrarProgressoProfessorAluno
-
 
 // ======================================================
 // INICIALIZAÇÃO
 // ======================================================
 
 async function inicializar() {
-
-  const app =
-    document.getElementById('app')
-
-
-  app.innerHTML = `
-
-    <div class="loading-screen">
-
-      <h2>
-        Personal Fit Pro
-      </h2>
-
-      <p>
-        Carregando...
-      </p>
-
-    </div>
-
-  `
-
-
   const {
     data: {
       session
     }
-  } =
-    await supabase.auth.getSession()
-
+  } = await supabase.auth.getSession()
 
   if (session?.user) {
-
     window.usuarioAtual =
       session.user
 
@@ -2685,35 +2262,26 @@ async function inicializar() {
       session.user
     )
 
-  } else {
-
-    mostrarLogin()
+    return
   }
 
-
-  supabase.auth.onAuthStateChange(
-    async (
-      event,
-      sessionAtual
-    ) => {
-
-      if (
-        event === 'SIGNED_IN' &&
-        sessionAtual?.user
-      ) {
-
-        window.usuarioAtual =
-          sessionAtual.user
-
-      }
-
-    }
-  )
+  mostrarLogin()
 }
 
+supabase.auth.onAuthStateChange(
+  async (
+    event,
+    session
+  ) => {
 
-// ======================================================
-// INICIAR APLICAÇÃO
-// ======================================================
+    if (
+      event === 'SIGNED_OUT'
+    ) {
+      window.usuarioAtual = null
+      mostrarLogin()
+    }
+
+  }
+)
 
 inicializar()
