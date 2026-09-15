@@ -832,85 +832,162 @@ async function salvarNovoAluno(event) {
     .getElementById('novo-aluno-email')
     .value
     .trim()
+    .toLowerCase()
 
   const ativo = document
     .getElementById('novo-aluno-ativo')
     .checked
 
-  const mensagem = document.getElementById(
-    'novo-aluno-message'
-  )
-
-  if (!nome) {
-    mensagem.innerHTML = `
-      <div class="message error">
-        Informe o nome do aluno.
-      </div>
-    `
-
+  if (!nome || !email) {
+    alert('Preencha o nome e o e-mail do aluno.')
     return
   }
 
-  mensagem.innerHTML = `
-    <div class="message info">
-      Salvando aluno...
-    </div>
-  `
+  const botao = event.submitter
 
-  const dadosAluno = {
-    nome,
-    ativo
+  if (botao) {
+    botao.disabled = true
+    botao.textContent = 'Salvando...'
   }
 
-  if (email) {
-    dadosAluno.email = email
-  }
+  try {
+    // ======================================================
+    // 1. SALVAR O ALUNO NA TABELA ALUNOS
+    // ======================================================
 
-  const {
-    data,
-    error
-  } = await supabase
-    .from('alunos')
-    .insert(dadosAluno)
-    .select()
-    .single()
+    const {
+      data: aluno,
+      error: alunoError
+    } = await supabase
+      .from('alunos')
+      .insert({
+        nome,
+        email,
+        ativo
+      })
+      .select()
+      .single()
 
-  if (error) {
-    console.error(error)
+    if (alunoError) {
+      console.error('Erro ao cadastrar aluno:', alunoError)
 
-    let mensagemErro =
-      'Não foi possível cadastrar o aluno.'
+      if (alunoError.code === '23505') {
+        alert(
+          'Já existe um aluno cadastrado com este e-mail.'
+        )
+      } else {
+        alert(
+          'Não foi possível cadastrar o aluno.'
+        )
+      }
 
-    if (
-      error.code === '23505'
-    ) {
-      mensagemErro =
-        'Este e-mail já está cadastrado.'
+      return
     }
 
-    mensagem.innerHTML = `
-      <div class="message error">
-        ${escaparHtml(mensagemErro)}
-      </div>
-    `
+    console.log(
+      'Aluno cadastrado com sucesso:',
+      aluno
+    )
 
-    return
+    // ======================================================
+    // 2. CRIAR O ACESSO NO SUPABASE AUTHENTICATION
+    // ======================================================
+
+    const {
+      data: acesso,
+      error: acessoError
+    } = await supabase.functions.invoke(
+      'criar-aluno',
+      {
+        body: {
+          aluno_id: aluno.id
+        }
+      }
+    )
+
+    if (acessoError) {
+      console.error(
+        'Erro ao criar acesso do aluno:',
+        acessoError
+      )
+
+      alert(
+        'O aluno foi cadastrado, mas não foi possível criar o acesso de login.\n\n' +
+        'O cadastro permanece salvo. Podemos tentar criar o acesso novamente.'
+      )
+
+      await mostrarAlunosProfessor()
+
+      return
+    }
+
+    // ======================================================
+    // 3. VERIFICAR RESPOSTA DA EDGE FUNCTION
+    // ======================================================
+
+    if (!acesso || !acesso.sucesso) {
+      console.error(
+        'Edge Function retornou erro:',
+        acesso
+      )
+
+      alert(
+        acesso?.erro ||
+        'O aluno foi cadastrado, mas houve um problema ao criar o acesso.'
+      )
+
+      await mostrarAlunosProfessor()
+
+      return
+    }
+
+    // ======================================================
+    // 4. SUCESSO COMPLETO
+    // ======================================================
+
+    console.log(
+      'Acesso criado com sucesso:',
+      acesso
+    )
+
+    const senhaTemporaria =
+      acesso.acesso?.senha_temporaria || ''
+
+    if (senhaTemporaria) {
+      alert(
+        'Aluno cadastrado com sucesso! 🎉\n\n' +
+        'E-mail: ' +
+        email +
+        '\n\n' +
+        'Senha temporária: ' +
+        senhaTemporaria +
+        '\n\n' +
+        'IMPORTANTE: anote essa senha e entregue ao aluno.'
+      )
+    } else {
+      alert(
+        'Aluno e acesso cadastrados com sucesso! 🎉'
+      )
+    }
+
+    await mostrarAlunosProfessor()
+
+  } catch (error) {
+    console.error(
+      'Erro inesperado ao cadastrar aluno:',
+      error
+    )
+
+    alert(
+      'Ocorreu um erro inesperado ao cadastrar o aluno.'
+    )
+
+  } finally {
+    if (botao) {
+      botao.disabled = false
+      botao.textContent = 'Salvar aluno'
+    }
   }
-
-  console.log(
-    'Aluno cadastrado:',
-    data
-  )
-
-  mensagem.innerHTML = `
-    <div class="message success">
-      Aluno cadastrado com sucesso! ✅
-    </div>
-  `
-
-  setTimeout(() => {
-    mostrarAlunosProfessor()
-  }, 800)
 }
 
 window.salvarNovoAluno =
